@@ -3,6 +3,7 @@ import {
   ConnectionsModule,
   ConsoleLogger,
   LogLevel,
+  utils,
 } from "@credo-ts/core"
 import { AskarModule } from "@credo-ts/askar"
 import { agentDependencies } from "@credo-ts/react-native"
@@ -41,4 +42,8 @@ export const initializeAppAgent = async ({
   await agent.initialize()
 
   return agent
+}
+
+export const generateUUID = () => {
+  return utils.uuid()
 }

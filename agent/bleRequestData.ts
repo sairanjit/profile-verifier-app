@@ -5,15 +5,22 @@ import {
 } from "@animo-id/react-native-ble-didcomm"
 import {
   type Agent,
+  ConnectionEventTypes,
+  ConnectionRecord,
+  ConnectionState,
+  ConnectionStateChangedEvent,
+  DidExchangeState,
   JsonTransformer,
   MessageReceiver,
-  ProofEventTypes,
-  type ProofExchangeRecord,
-  ProofState,
-  type ProofStateChangedEvent,
 } from "@credo-ts/core"
 import { BleOutboundTransport } from "@credo-ts/transport-ble"
 import { AppAgent } from "./agent"
+import {
+  ConnectionProfileUpdatedEvent,
+  ProfileEventTypes,
+  UserProfileData,
+  UserProfileRequestedEvent,
+} from "@2060.io/credo-ts-didcomm-user-profile"
 
 export type BleRequestProofOptions = {
   agent: Agent
@@ -25,7 +32,7 @@ export type BleRequestProofOptions = {
   onDisconnected?: () => Promise<void> | void
 }
 
-export const bleRequestProof = async ({
+export const bleRequestUserData = async ({
   peripheral,
   agent,
   serviceUuid,
@@ -41,19 +48,31 @@ export const bleRequestProof = async ({
 
     disconnectedNotifier(agent, peripheral, onDisconnected)
 
-    const proofRecordId = await sendMessageWhenConnected(
+    const outOfBandId = await sendInvitationWhenConnected(
       agent,
       peripheral,
-      userProfileRequestTemplate,
       serviceUuid,
       onConnected
     )
 
     const messageListener = startMessageReceiver(agent, peripheral)
-    await returnWhenProofReceived(proofRecordId, agent, peripheral)
+    console.log("check 111")
+    await returnWhenConnected(outOfBandId, agent, peripheral)
+
+    console.log("Connection is completed outOfBandId", outOfBandId)
+
+    const { connection, profile } = await returnWhenProfileReceived(
+      outOfBandId,
+      agent
+    )
+
+    console.log("\n\n profile", profile)
+    console.log("\n\n connection", connection)
+
+    // await returnWhenProofReceived(proofRecordId, agent, peripheral)
     messageListener.remove()
 
-    return proofRecordId
+    return { connection, profile }
   } catch (e) {
     if (e instanceof Error) {
       agent.config.logger.error(e.message, { cause: e })
@@ -90,10 +109,9 @@ const startPeripheral = async (
   )
 }
 
-const sendMessageWhenConnected = async (
+const sendInvitationWhenConnected = async (
   agent: Agent,
   peripheral: Peripheral,
-  profileTemplate: any,
   serviceUuid: string,
   onConnected?: () => Promise<void> | void
 ) =>
@@ -101,14 +119,11 @@ const sendMessageWhenConnected = async (
     const connectedListener = peripheral.registerOnConnectedListener(
       async () => {
         if (onConnected) await onConnected()
-        const { message, proofRecordId } = await createBleProofRequestMessage(
-          agent,
-          profileTemplate,
-          serviceUuid
-        )
+        const { message, outOfBandId } =
+          await createBleConnectionInvitationMessage(agent, serviceUuid)
         await peripheral.sendMessage(message)
         connectedListener.remove()
-        resolve(proofRecordId)
+        resolve(outOfBandId)
       }
     )
   })
@@ -140,96 +155,89 @@ const startMessageReceiver = (agent: Agent, peripheral: Peripheral) => {
   })
 }
 
-const returnWhenProofReceived = (
+const returnWhenConnected = (
   id: string,
-  agent: Agent,
+  agent: AppAgent,
   peripheral: Peripheral
-): Promise<ProofExchangeRecord> => {
+): Promise<void> => {
   return new Promise((resolve, reject) => {
     const listener = async ({
-      payload: { proofRecord },
-    }: ProofStateChangedEvent) => {
+      payload: { connectionRecord },
+    }: ConnectionStateChangedEvent) => {
+      console.log("connectionRecord check", connectionRecord)
+      console.log("connectionRecord 1111", connectionRecord?.outOfBandId, id)
       const off = () =>
-        agent.events.off(ProofEventTypes.ProofStateChanged, listener)
-      if (proofRecord.id !== id) return
-      if (proofRecord.state === ProofState.PresentationReceived) {
-        console.log("")
-        const proofProtocol = agent.proofs.config.proofProtocols.find(
-          (pp) => pp.version === "v2"
-        )
-        if (!proofProtocol)
-          throw new Error("No V2 proof protocol registered on the agent")
-        const { message } = await proofProtocol.acceptPresentation(
-          agent.context,
-          { proofRecord }
-        )
-        const serializedMessage = JsonTransformer.serialize(message)
-        await peripheral.sendMessage(serializedMessage)
-      } else if (proofRecord.state === ProofState.Done) {
+        agent.events.off(ConnectionEventTypes.ConnectionStateChanged, listener)
+
+      // TODO: Need to check this
+      // if (connectionRecord?.outOfBandId !== id) return
+      if (connectionRecord.state === DidExchangeState.Completed) {
+        console.log("connectionRecord.state", connectionRecord.state)
+        await agent.modules.userProfile.requestUserProfile({
+          connectionId: connectionRecord.id,
+        })
+
+        // const serializedMessage = JsonTransformer.serialize(message)
+        // await peripheral.sendMessage(serializedMessage)
+        // TODO: Need to check this
         off()
-        resolve(proofRecord)
+        resolve()
       } else if (
-        [ProofState.Abandoned, ProofState.Declined].includes(proofRecord.state)
+        [DidExchangeState.Abandoned].includes(connectionRecord.state)
       ) {
         off()
         reject(
           new Error(
-            `Proof could not be shared because it has been ${proofRecord.state}`
+            `Connection could not be shared because it has been ${connectionRecord.state}`
           )
         )
+      } else {
+        console.log("connectionRecord.state no where", connectionRecord.state)
       }
     }
-    agent.events.on<ProofStateChangedEvent>(
-      ProofEventTypes.ProofStateChanged,
+    agent.events.on<ConnectionStateChangedEvent>(
+      ConnectionEventTypes.ConnectionStateChanged,
       listener
     )
   })
 }
 
-// const createBleProofRequestMessage = async (
-//   agent: AppAgent,
-//   profileRequestTemplate: any,
-//   serviceUuid: string
-// ) => {
-//   await agent.modules.userProfile.requestUserProfile({
-//     connectionId: "",
-//   })
+const returnWhenProfileReceived = (id: string, agent: Agent) => {
+  return new Promise<{
+    profile: UserProfileData
+    connection: ConnectionRecord
+  }>((resolve, reject) => {
+    const listener = async ({
+      payload: { connection, profile },
+    }: ConnectionProfileUpdatedEvent) => {
+      const off = () =>
+        agent.events.off(ProfileEventTypes.ConnectionProfileUpdated, listener)
+      // if (connection?.outOfBandId !== id) return
 
-//   const routing = await agent.mediationRecipient.getRouting({
-//     useDefaultMediator: false,
-//   })
-//   routing.endpoints = [`ble://${serviceUuid}`]
-//   const { outOfBandInvitation } = await agent.oob.createInvitation({
-//     routing,
-//     handshake: false,
-//   })
+      off()
+      resolve({ profile, connection })
+    }
+    agent.events.on<ConnectionProfileUpdatedEvent>(
+      ProfileEventTypes.ConnectionProfileUpdated,
+      listener
+    )
+  })
+}
 
-//   return {
-//     message: JSON.stringify(outOfBandInvitation.toJSON()),
-//     proofRecordId: proofRecord.id,
-//   }
-// }
-
-const createBleRequestProfileMessage = async (
-  agent: AppAgent,
-  profileRequestTemplate: any,
+const createBleConnectionInvitationMessage = async (
+  agent: Agent,
   serviceUuid: string
 ) => {
-  await agent.modules.userProfile.requestUserProfile({
-    connectionId: "",
-  })
-
   const routing = await agent.mediationRecipient.getRouting({
     useDefaultMediator: false,
   })
   routing.endpoints = [`ble://${serviceUuid}`]
   const { outOfBandInvitation } = await agent.oob.createInvitation({
     routing,
-    handshake: false,
   })
 
   return {
-    message: JSON.stringify(outOfBandInvitation.toJSON()),
-    // proofRecordId: proofRecord.id,
+    message: outOfBandInvitation.toUrl({ domain: "http://github.com" }),
+    outOfBandId: outOfBandInvitation.threadId,
   }
 }

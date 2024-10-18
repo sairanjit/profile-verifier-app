@@ -14,6 +14,11 @@ import "react-native-reanimated"
 import { useColorScheme } from "@/hooks/useColorScheme"
 import AgentProvider from "@credo-ts/react-hooks"
 import { AppAgent, initializeAppAgent } from "@/agent"
+import {
+  Peripheral,
+  PeripheralProvider,
+} from "@animo-id/react-native-ble-didcomm"
+import { PaperProvider } from "react-native-paper"
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync()
@@ -54,22 +59,26 @@ export default function RootLayout() {
 
   return (
     <AgentProvider agent={agent}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        {/* <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack> */}
-        <Stack initialRouteName="index" screenOptions={{ headerShown: false }}>
-          {/* <Stack.Screen
-            // options={{
-            //   presentation: "modal",
-            //   // Extra modal options not needed for QR Scanner
-            // }}
-            name="scan"
-          /> */}
-          <Stack.Screen name="+not-found" />
-        </Stack>
-      </ThemeProvider>
+      <PeripheralProvider peripheral={new Peripheral()}>
+        <PaperProvider>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <Stack initialRouteName="index">
+              <Stack.Screen name="qrcode" options={{ title: "QRCode" }} />
+              <Stack.Screen
+                name="template-details"
+                options={{ title: "Template Details" }}
+              />
+              <Stack.Screen
+                name="user-details"
+                options={{ title: "User Preferences" }}
+              />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </ThemeProvider>
+        </PaperProvider>
+      </PeripheralProvider>
     </AgentProvider>
   )
 }
