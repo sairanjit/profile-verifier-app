@@ -7,10 +7,8 @@ import {
   type Agent,
   ConnectionEventTypes,
   ConnectionRecord,
-  ConnectionState,
   ConnectionStateChangedEvent,
   DidExchangeState,
-  JsonTransformer,
   MessageReceiver,
 } from "@credo-ts/core"
 import { BleOutboundTransport } from "@credo-ts/transport-ble"
@@ -19,7 +17,6 @@ import {
   ConnectionProfileUpdatedEvent,
   ProfileEventTypes,
   UserProfileData,
-  UserProfileRequestedEvent,
 } from "@2060.io/credo-ts-didcomm-user-profile"
 
 export type BleRequestProofOptions = {
@@ -57,7 +54,12 @@ export const bleRequestUserData = async ({
 
     const messageListener = startMessageReceiver(agent, peripheral)
     console.log("check 111")
-    await returnWhenConnected(outOfBandId, agent, peripheral)
+    await returnWhenConnected(
+      outOfBandId,
+      agent,
+      peripheral,
+      userProfileRequestTemplate
+    )
 
     console.log("Connection is completed outOfBandId", outOfBandId)
 
@@ -158,7 +160,8 @@ const startMessageReceiver = (agent: Agent, peripheral: Peripheral) => {
 const returnWhenConnected = (
   id: string,
   agent: AppAgent,
-  peripheral: Peripheral
+  peripheral: Peripheral,
+  userProfileRequestTemplate: string[]
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
     const listener = async ({
@@ -175,6 +178,7 @@ const returnWhenConnected = (
         console.log("connectionRecord.state", connectionRecord.state)
         await agent.modules.userProfile.requestUserProfile({
           connectionId: connectionRecord.id,
+          query: userProfileRequestTemplate,
         })
 
         // const serializedMessage = JsonTransformer.serialize(message)
@@ -215,6 +219,8 @@ const returnWhenProfileReceived = (id: string, agent: Agent) => {
       // if (connection?.outOfBandId !== id) return
 
       off()
+      console.log("profile", profile)
+      console.log("connection", connection)
       resolve({ profile, connection })
     }
     agent.events.on<ConnectionProfileUpdatedEvent>(

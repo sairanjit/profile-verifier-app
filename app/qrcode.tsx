@@ -49,6 +49,10 @@ export default function Screen() {
       userProfileRequestTemplate: template?.attributes,
     }).then((data) => {
       console.log("data", data)
+      router.push({
+        pathname: "/user-details",
+        params: { userData: JSON.stringify(data.profile) },
+      })
     })
   }
 

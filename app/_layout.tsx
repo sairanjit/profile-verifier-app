@@ -19,6 +19,8 @@ import {
   PeripheralProvider,
 } from "@animo-id/react-native-ble-didcomm"
 import { PaperProvider } from "react-native-paper"
+import { LogBox } from "react-native"
+LogBox.ignoreAllLogs() //Ignore all log notifications
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync()

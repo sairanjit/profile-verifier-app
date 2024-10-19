@@ -7,33 +7,11 @@ import {
   Text,
   List,
   Divider,
-  Button,
   useTheme,
 } from "react-native-paper"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
-
-const user = {
-  Profile: {
-    "Full Name": "Sai Ranjit",
-    Email: "sairanjit@gmail.com",
-    Phone: "+91 (984) 879-5083",
-    Place: "Pune, India",
-    Avatar: "https://avatars.githubusercontent.com/u/34263716?v=4",
-  },
-  "Seat Choice": {
-    "Seat Type": "Business Class",
-    "Seat Location": "Window",
-  },
-  "Food Preference": {
-    "Food Choice": "Italian",
-  },
-  "Hotel Preference": {
-    "Hotel Preferences": "Hotel A",
-  },
-  "Destination Preference": {
-    "Destination Preference": "New York",
-  },
-}
+import { useLocalSearchParams } from "expo-router"
+import { formatDisplayText } from "@/utils"
 
 type UserKeys =
   | "Profile"
@@ -44,14 +22,21 @@ type UserKeys =
 
 export default function Screen() {
   const { colors } = useTheme()
+  const params = useLocalSearchParams()
+
+  console.log("params", params)
+
+  const user = JSON.parse(params.userData as any)
+
+  console.log("user", user)
 
   return (
     <ScrollView style={styles.container}>
       <Card style={styles.header}>
         <View style={styles.avatarContainer}>
-          <Avatar.Image size={120} source={{ uri: user.Profile.Avatar }} />
-          <Title style={styles.name}>{user.Profile["Full Name"]}</Title>
-          <Text style={styles.location}>{user.Profile.Place}</Text>
+          <Avatar.Image size={120} source={{ uri: user.avatar }} />
+          <Title style={styles.name}>{user.name}</Title>
+          <Text style={styles.location}>{user.location}</Text>
         </View>
       </Card>
 
@@ -60,7 +45,7 @@ export default function Screen() {
           <Title>Contact Information</Title>
           <List.Item
             title="Email"
-            description={user.Profile.Email}
+            description={user.email}
             left={(props) => (
               <MaterialCommunityIcons
                 {...props}
@@ -70,24 +55,26 @@ export default function Screen() {
               />
             )}
           />
-          <Divider />
-          <List.Item
-            title="Phone"
-            description={user.Profile.Phone}
-            left={(props) => (
-              <MaterialCommunityIcons
-                {...props}
-                name="phone"
-                size={24}
-                color={colors.primary}
-              />
-            )}
-          />
         </Card.Content>
       </Card>
 
       {Object.entries(user).map(([mainKey, value]) => {
-        if (mainKey === "Profile") return null
+        const excludedKeys = [
+          "name",
+          "email",
+          "phone",
+          "avatar",
+          "location",
+          "socialLinks",
+          "bio",
+          // Default keys
+          "displayIcon",
+          "displayPicture",
+        ]
+
+        if (excludedKeys.includes(mainKey)) {
+          return null
+        }
 
         const section = user[mainKey as UserKeys]
 
@@ -100,7 +87,7 @@ export default function Screen() {
                 return (
                   <>
                     <List.Item
-                      title={subKey}
+                      title={formatDisplayText(subKey)}
                       description={value}
                       left={(props) => (
                         <MaterialCommunityIcons

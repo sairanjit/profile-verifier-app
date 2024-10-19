@@ -1,4 +1,5 @@
 import { userProfileTemplates } from "@/constants/data"
+import { formatDisplayText } from "@/utils"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { StyleSheet, SafeAreaView, View, Text } from "react-native"
 import { Button, useTheme } from "react-native-paper"
@@ -75,7 +76,7 @@ export default function Screen() {
             {template.attributes.map((attribute) => (
               <Text key={attribute} style={style.attribute}>
                 {" "}
-                {`\u2022`} {attribute}
+                {`\u2022`} {formatDisplayText(attribute)}
               </Text>
             ))}
           </View>
