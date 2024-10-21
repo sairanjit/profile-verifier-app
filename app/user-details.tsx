@@ -8,6 +8,7 @@ import {
   List,
   Divider,
   useTheme,
+  Switch,
 } from "react-native-paper"
 import { MaterialCommunityIcons } from "@expo/vector-icons"
 import { useLocalSearchParams } from "expo-router"
@@ -81,9 +82,33 @@ export default function Screen() {
         return (
           <Card style={styles.section}>
             <Card.Content>
-              <Title>{mainKey}</Title>
+              <Title>{formatDisplayText(mainKey)}</Title>
               {Object.entries(section).map(([subKey, value], index) => {
                 const isLastItem = index === Object.entries(section).length - 1
+
+                if (typeof value === "boolean") {
+                  return (
+                    <>
+                      <List.Item
+                        title={formatDisplayText(subKey)}
+                        description={""}
+                        left={(props) => (
+                          <MaterialCommunityIcons
+                            {...props}
+                            name="information-outline"
+                            size={24}
+                            color={colors.primary}
+                          />
+                        )}
+                        right={() => (
+                          <Switch value={value} color={colors.primary} />
+                        )}
+                      />
+                      {!isLastItem && <Divider />}
+                    </>
+                  )
+                }
+
                 return (
                   <>
                     <List.Item
