@@ -1,0 +1,15 @@
+diff --git a/build/UserProfileApi.js b/build/UserProfileApi.js
+index bad2e56abb31bea75de45be7fda6f2601420ca3c..b9b471d92da4a76e053aa099c869ac2e6a570088 100644
+--- a/build/UserProfileApi.js
++++ b/build/UserProfileApi.js
+@@ -31,7 +31,9 @@ let UserProfileApi = class UserProfileApi {
+      */
+     async requestUserProfile(options) {
+         const connection = await this.agentContext.dependencyManager.resolve(core_1.ConnectionsApi).getById(options.connectionId);
+-        const message = await this.userProfileService.createRequestProfileMessage({});
++        const message = await this.userProfileService.createRequestProfileMessage({
++            query: options.query,
++        });
+         await this.messageSender.sendMessage(new core_1.OutboundMessageContext(message, { agentContext: this.agentContext, connection }));
+     }
+     /**

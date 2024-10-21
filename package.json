@@ -64,5 +64,10 @@
   "resolutions": {
     "@unimodules/react-native-adapter": "./noop",
     "@unimodules/core": "./noop"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@2060.io/credo-ts-didcomm-user-profile@0.0.6": "patches/@2060.io__credo-ts-didcomm-user-profile@0.0.6.patch"
+    }
   }
 }
