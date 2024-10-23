@@ -1,50 +1,99 @@
-# Welcome to your Expo app 👋
+# User Profile Verifier App: DIF Hackathon 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This App helps in choosing a user preference template and share user profile data with the verifier.
 
-## Get started
+## Table of Contents
 
-1. Install dependencies
+1. [Links](#links)
+2. [Instructions to Setup](#instructions-to-setup)
+3. [Tech Stack](#tech-stack)
+4. [Solution](#solution)
 
-   ```bash
-   npm install
-   ```
+## Links
 
-2. Start the app
+- [User Profile App](https://github.com/sairanjit/user-profile-app)
+- [Profile Verifier App](https://github.com/sairanjit/profile-verifier-app)
 
-   ```bash
-    npx expo start
-   ```
+## Instructions to Setup
 
-In the output, you'll find options to open the app in a
+> Note: You will need to have real `Android` device connected to your computer to run the app.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Follow these instructions to set up and run the project:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- Clone the Git repository: `https://github.com/sairanjit/profile-verifier-app`
+- Install project dependencies: `pnpm install`
+- Build the native dependencies: `pnpm prebuild`
+- Run the app: `pnpm android`
 
-## Get a fresh project
+## Tech Stack
 
-When you're ready, run:
+### Frontend
 
-```bash
-npm run reset-project
+- [React Native](https://reactnative.dev/)
+- [Expo](https://expo.dev/)
+- [React Navigation](https://reactnavigation.org/)
+- [React Native Paper](https://callstack.github.io/react-native-paper/)
+
+### Dependencies
+
+- [Credo](https://github.com/openwallet-foundation/credo-ts)
+- [Bluetooth](https://github.com/animo-id/react-native-ble-didcomm)
+
+### DIF Work Items
+
+- [DIDs](https://didcomm.org/)
+- [DIDComm over Bluetooth](https://github.com/decentralized-identity/didcomm-bluetooth/tree/main)
+- [Peer DID Method](https://github.com/decentralized-identity/peer-did-method-spec)
+- [User Profile DIDComm Spec](https://didcomm.org/user-profile/1.0/)
+
+## Solution
+
+1. **Initial Setup (Verifier Side)**:
+   1. Verifier selects a user preference template
+   2. Verifier generates a QR code containing a Bluetooth Low Energy (BLE) Service UUID
+   3. Verifier start advertising using the above Service UUID
+2. **User Interaction with QR Code**:
+   1. User scans the QR code using their device
+   2. User's device extracts the BLE Service UUID from the QR code
+3. **BLE Connection Establishment**:
+   1. User's device initiates a BLE scan using the extracted Service UUID
+   2. User's device connects to the Verifier using the Service UUID
+   3. BLE connection is successfully established between User and Verifier
+4. **DIDComm Setup**:
+   1. Verifier sends a DIDComm invitation to User over the BLE connection
+   2. User processes the received DIDComm invitation
+   3. User accepts the DIDComm invitation
+   4. DIDComm connection is successfully established over BLE
+5. **User Profile Data Exchange**:
+   1. Verifier sends a request for user profile data using DIDComm over BLE with the selected user preference template
+   2. User shares the requested profile data using DIDComm over BLE
+   3. Data sharing process completes successfully
+6. **BLE Connection Closure**:
+   1. User's device closes the BLE connection
+   2. Verifier's device closes the BLE connection
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    actor Verifier
+    
+    Note right of Verifier: Choose user preference template
+    Verifier->>Verifier: Generate QR Code with<br/>BLE Service UUID
+    
+    User->>Verifier: Scan QR Code
+    Note over User: Extract Service UUID
+    
+    User->>Verifier: BLE scan & connect<br/>using Service UUID
+    Verifier-->>User: BLE Connection established
+    
+    Verifier->>User: Send out-of-band didcomm invitation over ble
+    Note over User: Process invitation
+    User->>Verifier: Accept invitation
+    Verifier-->>User: DIDComm Connection established
+    
+    Verifier->>User: Request user profile using DIDComm over BLE
+    User->>Verifier: Share requested profile data using DIDComm over BLE
+    
+    Note over User, Verifier: Data sharing completed successfully
 ```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
