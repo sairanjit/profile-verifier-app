@@ -3,7 +3,6 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "reset-project": "node ./scripts/reset-project.js",
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest --watchAll",

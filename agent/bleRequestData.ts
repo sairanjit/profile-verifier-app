@@ -53,7 +53,6 @@ export const bleRequestUserData = async ({
     )
 
     const messageListener = startMessageReceiver(agent, peripheral)
-    console.log("check 111")
     await returnWhenConnected(
       outOfBandId,
       agent,
@@ -62,14 +61,10 @@ export const bleRequestUserData = async ({
     )
 
     console.log("Connection is completed outOfBandId", outOfBandId)
-
     const { connection, profile } = await returnWhenProfileReceived(
       outOfBandId,
       agent
     )
-
-    console.log("\n\n profile", profile)
-    console.log("\n\n connection", connection)
 
     // await returnWhenProofReceived(proofRecordId, agent, peripheral)
     messageListener.remove()
@@ -167,15 +162,12 @@ const returnWhenConnected = (
     const listener = async ({
       payload: { connectionRecord },
     }: ConnectionStateChangedEvent) => {
-      console.log("connectionRecord check", connectionRecord)
-      console.log("connectionRecord 1111", connectionRecord?.outOfBandId, id)
       const off = () =>
         agent.events.off(ConnectionEventTypes.ConnectionStateChanged, listener)
 
       // TODO: Need to check this
       // if (connectionRecord?.outOfBandId !== id) return
       if (connectionRecord.state === DidExchangeState.Completed) {
-        console.log("connectionRecord.state", connectionRecord.state)
         await agent.modules.userProfile.requestUserProfile({
           connectionId: connectionRecord.id,
           query: userProfileRequestTemplate,
@@ -219,8 +211,6 @@ const returnWhenProfileReceived = (id: string, agent: Agent) => {
       // if (connection?.outOfBandId !== id) return
 
       off()
-      console.log("profile", profile)
-      console.log("connection", connection)
       resolve({ profile, connection })
     }
     agent.events.on<ConnectionProfileUpdatedEvent>(

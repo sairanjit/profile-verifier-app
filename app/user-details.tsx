@@ -25,11 +25,7 @@ export default function Screen() {
   const { colors } = useTheme()
   const params = useLocalSearchParams()
 
-  console.log("params", params)
-
   const user = JSON.parse(params.userData as any)
-
-  console.log("user", user)
 
   return (
     <ScrollView style={styles.container}>
@@ -80,7 +76,7 @@ export default function Screen() {
         const section = user[mainKey as UserKeys]
 
         return (
-          <Card style={styles.section}>
+          <Card key={mainKey} style={styles.section}>
             <Card.Content>
               <Title>{formatDisplayText(mainKey)}</Title>
               {Object.entries(section).map(([subKey, value], index) => {
@@ -88,7 +84,7 @@ export default function Screen() {
 
                 if (typeof value === "boolean") {
                   return (
-                    <>
+                    <View key={`${mainKey}-${subKey}`}>
                       <List.Item
                         title={formatDisplayText(subKey)}
                         description={""}
@@ -105,12 +101,12 @@ export default function Screen() {
                         )}
                       />
                       {!isLastItem && <Divider />}
-                    </>
+                    </View>
                   )
                 }
 
                 return (
-                  <>
+                  <View key={`${mainKey}-${subKey}`}>
                     <List.Item
                       title={formatDisplayText(subKey)}
                       description={value}
@@ -124,7 +120,7 @@ export default function Screen() {
                       )}
                     />
                     {!isLastItem && <Divider />}
-                  </>
+                  </View>
                 )
               })}
             </Card.Content>
