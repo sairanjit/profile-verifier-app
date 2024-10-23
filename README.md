@@ -1,6 +1,6 @@
 # User Profile Verifier App: DIF Hackathon 👋
 
-This App helps in choosing a user preference template and share user profile data with the verifier.
+This App helps choose a user preference template and request a user profile based on the selected template with the user.
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@ This App helps in choosing a user preference template and share user profile dat
 
 ## Instructions to Setup
 
-> Note: You will need to have real `Android` device connected to your computer to run the app.
+> Note: To run the app, you must have a real Android device connected to your computer.
 
 Follow these instructions to set up and run the project:
 
@@ -51,25 +51,25 @@ Follow these instructions to set up and run the project:
 1. **Initial Setup (Verifier Side)**:
    1. Verifier selects a user preference template
    2. Verifier generates a QR code containing a Bluetooth Low Energy (BLE) Service UUID
-   3. Verifier start advertising using the above Service UUID
+   3. Verifier starts advertising using the above Service UUID
 2. **User Interaction with QR Code**:
-   1. User scans the QR code using their device
-   2. User's device extracts the BLE Service UUID from the QR code
+   1. The user scans the QR code using their device
+   2. The user's device extracts the BLE Service UUID from the QR code
 3. **BLE Connection Establishment**:
-   1. User's device initiates a BLE scan using the extracted Service UUID
-   2. User's device connects to the Verifier using the Service UUID
+   1. The user's device initiates a BLE scan using the extracted Service UUID
+   2. The user's device connects to the Verifier using the Service UUID
    3. BLE connection is successfully established between User and Verifier
 4. **DIDComm Setup**:
-   1. Verifier sends a DIDComm invitation to User over the BLE connection
-   2. User processes the received DIDComm invitation
-   3. User accepts the DIDComm invitation
+   1. Verifier sends a DIDComm invitation to the User over the BLE connection
+   2. The user processes the received DIDComm invitation
+   3. The user accepts the DIDComm invitation
    4. DIDComm connection is successfully established over BLE
 5. **User Profile Data Exchange**:
    1. Verifier sends a request for user profile data using DIDComm over BLE with the selected user preference template
    2. User shares the requested profile data using DIDComm over BLE
    3. Data sharing process completes successfully
 6. **BLE Connection Closure**:
-   1. User's device closes the BLE connection
+   1. The user's device closes the BLE connection
    2. Verifier's device closes the BLE connection
 
 ```mermaid
