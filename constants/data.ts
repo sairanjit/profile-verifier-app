@@ -23,6 +23,12 @@ export const userProfileTemplates = [
     description: "Request a travel preferences from the user",
     attributes: ["travel", "name", "email", "avatar", "location"],
   },
+  {
+    templateId: "template-5",
+    name: "Health Data",
+    description: "Request health data from the user",
+    attributes: ["healthData", "name", "email", "avatar", "location"],
+  },
 ]
 
 export type UserProfileRequestTemplate = {

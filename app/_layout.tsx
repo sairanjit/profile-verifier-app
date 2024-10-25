@@ -6,7 +6,7 @@ import {
   ThemeProvider,
 } from "@react-navigation/native"
 import { useFonts } from "expo-font"
-import { Stack } from "expo-router"
+import { Stack, useRouter } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
 import { useEffect, useState } from "react"
 import "react-native-reanimated"
@@ -20,12 +20,14 @@ import {
 } from "@animo-id/react-native-ble-didcomm"
 import { PaperProvider } from "react-native-paper"
 import { LogBox } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
 LogBox.ignoreAllLogs() //Ignore all log notifications
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
+  const router = useRouter()
   const [agent, setAgent] = useState<AppAgent>()
   const colorScheme = useColorScheme()
   const [loaded] = useFonts({
@@ -74,7 +76,19 @@ export default function RootLayout() {
               />
               <Stack.Screen
                 name="user-details"
-                options={{ title: "User Preferences" }}
+                options={{
+                  title: "User Preferences",
+                  headerRight: ({ tintColor }) => {
+                    return (
+                      <Ionicons
+                        name="home-outline"
+                        size={28}
+                        color={tintColor}
+                        onPress={() => router.dismissAll()}
+                      />
+                    )
+                  },
+                }}
               />
               <Stack.Screen name="+not-found" />
             </Stack>
